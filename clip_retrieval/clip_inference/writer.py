@@ -1,15 +1,24 @@
-"""writer module saves embeddings"""
+"""Writer module saves embeddings."""
 
-import fsspec
-from io import BytesIO
 import json
 import math
+from io import BytesIO
+
+import fsspec
 
 
 class OutputSink:
-    """This output sink can save image, text embeddings as npy and metadata as parquet"""
+    """This output sink can save image, text embeddings as npy and metadata as parquet."""
 
-    def __init__(self, output_folder, enable_text, enable_image, enable_metadata, partition_id, output_partition_count):
+    def __init__(
+        self,
+        output_folder,
+        enable_text,
+        enable_image,
+        enable_metadata,
+        partition_id,
+        output_partition_count,
+    ):
         self.enable_text = enable_text
         self.enable_image = enable_image
         self.enable_metadata = enable_metadata
@@ -41,9 +50,7 @@ class OutputSink:
         self.batch_count = 0
 
     def add(self, sample):
-        """
-        add to buffers the image embeddings, text embeddings, and meta
-        """
+        """Add to buffers the image embeddings, text embeddings, and meta."""
 
         self.batch_count += sample["image_embs"].shape[0] if self.enable_image else sample["text_embs"].shape[0]
         if self.enable_image:
@@ -56,9 +63,7 @@ class OutputSink:
             self.metadata.extend(sample["metadata"])
 
     def __write_batch(self):
-        """
-        write a batch of embeddings and meta to npy and parquet
-        """
+        """Write a batch of embeddings and meta to npy and parquet."""
         import numpy as np  # pylint: disable=import-outside-toplevel
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
@@ -97,7 +102,7 @@ class OutputSink:
         if self.enable_metadata:
             parsed_metadata = pd.json_normalize(df["metadata"].apply(json.loads))
             without_existing_columns = parsed_metadata.drop(
-                columns=set(["caption", "metadata", "image_path"]) & set(parsed_metadata.keys())
+                columns={"caption", "metadata", "image_path"} & set(parsed_metadata.keys())
             )
             df = df.join(without_existing_columns).drop(columns=["metadata"])
 
@@ -113,11 +118,24 @@ class OutputSink:
 
 
 class NumpyWriter:
-    """the numpy writer writes embeddings to folders img_emb, text_emb, and metadata"""
+    """The numpy writer writes embeddings to folders img_emb, text_emb, and metadata."""
 
-    def __init__(self, partition_id, output_folder, enable_text, enable_image, enable_metadata, output_partition_count):
+    def __init__(
+        self,
+        partition_id,
+        output_folder,
+        enable_text,
+        enable_image,
+        enable_metadata,
+        output_partition_count,
+    ):
         self.sink = OutputSink(
-            output_folder, enable_text, enable_image, enable_metadata, partition_id, output_partition_count
+            output_folder,
+            enable_text,
+            enable_image,
+            enable_metadata,
+            partition_id,
+            output_partition_count,
         )
 
     def __call__(self, batch):

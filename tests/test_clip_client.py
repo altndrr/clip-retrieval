@@ -15,9 +15,7 @@ knn_service_url = "https://knn.laion.ai/knn-service"
 
 # NOTE: This test may fail if the backend is down.
 def test_query():
-    """
-    Test the ClipClient.query() method.
-    """
+    """Test the ClipClient.query() method."""
     # Create a client
     client = ClipClient(
         url=knn_service_url,

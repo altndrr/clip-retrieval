@@ -1,13 +1,14 @@
-"""main module combines distributor, runner, reader, mapper, writer to produce clip embeddings"""
+"""Main module combines distributor, runner, reader, mapper, writer to produce clip embeddings."""
+
+import math
 
 import fire
-import math
 from braceexpand import braceexpand
 
+from clip_retrieval.clip_inference.distributor import PysparkDistributor, SequentialDistributor
 from clip_retrieval.clip_inference.logger import LoggerReader
 from clip_retrieval.clip_inference.reader import folder_to_keys
 from clip_retrieval.clip_inference.slurm_distributor import SlurmDistributor
-from clip_retrieval.clip_inference.distributor import PysparkDistributor, SequentialDistributor
 
 
 def calculate_partition_count(
@@ -19,8 +20,7 @@ def calculate_partition_count(
     write_batch_size,
     wds_number_file_per_input_file,
 ):
-    """
-    Calculate the partition count needed to store the resulting embeddings.
+    """Calculate the partition count needed to store the resulting embeddings.
 
     Return:
         - the output partition count and the updated toggles for image, text and metadata.
@@ -106,7 +106,12 @@ def main(
 
     # compute this now for the distributors to use
     if output_partition_count is None:
-        output_partition_count, enable_text, enable_image, enable_metadata = calculate_partition_count(
+        (
+            output_partition_count,
+            enable_text,
+            enable_image,
+            enable_metadata,
+        ) = calculate_partition_count(
             input_format=input_format,
             input_dataset=expanded_dataset,
             enable_image=enable_image,

@@ -1,13 +1,14 @@
-"""the parquet to arrow module is used to convert the parquet files into arrow files"""
+"""The parquet to arrow module is used to convert the parquet files into arrow files."""
 
-from multiprocessing.pool import ThreadPool
-import os
-from pathlib import Path
-import pyarrow.parquet as pq
-import pyarrow as pa
-from tqdm import tqdm
-import fire
 import math
+import os
+from multiprocessing.pool import ThreadPool
+from pathlib import Path
+
+import fire
+import pyarrow as pa
+import pyarrow.parquet as pq
+from tqdm import tqdm
 
 
 def file_to_count(filename):
@@ -25,18 +26,19 @@ def count_samples(files):
 
 
 def parquet_to_arrow(parquet_folder, output_arrow_folder, columns_to_return):
-    """convert the parquet files into arrow files"""
+    """Convert the parquet files into arrow files."""
     os.makedirs(output_arrow_folder, exist_ok=True)
     data_dir = Path(parquet_folder)
     files = sorted(data_dir.glob("*.parquet"))
     number_samples = count_samples(files)
-    print("There are {} samples in the dataset".format(number_samples))  # pylint: disable=consider-using-f-string
+    print(f"There are {number_samples} samples in the dataset")  # pylint: disable=consider-using-f-string
 
     schema = pq.read_table(files[0], columns=columns_to_return).schema
     sink = None
     current_batch_count = 0
     batch_counter = 0
     key_format = int(math.log10(number_samples / 10**10)) + 1
+    writer = None
     for parquet_files in tqdm(files):
         if sink is None or current_batch_count > 10**10:
             if sink is not None:

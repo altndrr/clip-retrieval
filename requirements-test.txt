@@ -1,10 +1,13 @@
 img2dataset
-black==22.3.0
-mypy==0.950
-pylint==2.13.4
+black==23.12.1
+flake8==6.1.0
+Flake8-pyproject==1.2.3
+isort==5.13.2
+pre-commit==3.6.0
+pytype==2023.10.31
 pytest-cov==3.0.0
 pytest-xdist==2.5.0
-pytest==7.0.1
+pytest==7.4.3
 types-setuptools
 types-requests
 types-certifi

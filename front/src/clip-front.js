@@ -385,25 +385,25 @@ class ClipFront extends LitElement {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-    
+
     @media (min-width: 700px) {
       #products{
         grid-template-columns: repeat(4, 1fr);
       }
     }
-    
+
     @media (min-width: 1000px) {
       #products {
         grid-template-columns: repeat(5, 1fr);
       }
     }
-    
+
     @media (min-width: 1300px) {
       #products {
         grid-template-columns: repeat(7, 1fr);
       }
     }
-    
+
     @media (min-width: 1600px) {
       #products{
         grid-template-columns: repeat(8, 1fr);
@@ -486,13 +486,13 @@ class ClipFront extends LitElement {
     src = (disp ? "" : "sss") +src
     */
     return html`
-    <figure style="margin:5px;display:table" 
+    <figure style="margin:5px;display:table"
     style=${'margin:1px; ' + (this.blacklist[src] !== undefined ? 'display:none' : 'display:inline')}>
      ${this.displaySimilarities ? html`<p>${(image.similarity).toFixed(4)}</p>` : ''}
       ${image.caption !== undefined
     ? html`<img src="assets/search.png" class="subTextSearch" @click=${() => { this.text = image.caption; this.textSearch() }} />`
 : ''}
-     
+
      <img src="assets/image-search.png" class="subImageSearch" @click=${() => {
     if (image.image !== undefined) {
       this.image = image.image
@@ -500,10 +500,10 @@ class ClipFront extends LitElement {
       this.imageUrl = image[this.urlColumn]
     }
   }} />
-      <img class="pic" src="${src}" alt="${image.caption !== undefined ? image.caption : ''}"" 
+      <img class="pic" src="${src}" alt="${image.caption !== undefined ? image.caption : ''}""
       title="${image.caption !== undefined ? image.caption : ''}"
       @error=${() => { this.blacklist = { ...this.blacklist, ...{ [src]: true } } }} />
-      
+
       ${this.displayCaptions
 ? html`<figcaption>
       ${image.caption !== undefined && image.caption.length > 50 &&
@@ -511,8 +511,8 @@ class ClipFront extends LitElement {
 ? image.caption.substr(0, 50) + '...'
 : image.caption}</figcaption>`
 : ''}
-    
-    
+
+
     </figure>
     `
   }
@@ -550,7 +550,7 @@ class ClipFront extends LitElement {
         <input type="file" id="filechooser" style="position:absolute;top:-100px" @change=${() =>
     this.updateImage(this.shadowRoot.getElementById('filechooser').files[0])}>
       </span>
-     
+
     </div>
     <div id="filter">
     Backend url: <br /><input type="text" style="width:80px" value=${this.backendHost} @input=${e => { this.backendHost = e.target.value }}/><br />

@@ -1,12 +1,11 @@
-"""
-Read environment variables and distribute work work to this rank.
-This script is called by the slurm distributor.
+"""Read environment variables and distribute work work to this rank. This script is called by the
+slurm distributor.
 
 Will launch a worker.
 """
 
-import os
 import json
+import os
 
 from torch.cuda import set_device
 
@@ -48,7 +47,7 @@ def slurm_worker():
     local_rank = int(os.environ["SLURM_LOCALID"])
 
     # Read the worker args from the file
-    with open(os.environ["WORKER_ARGS_PATH"], "r", encoding="utf-8") as worker_args_file:
+    with open(os.environ["WORKER_ARGS_PATH"], encoding="utf-8") as worker_args_file:
         worker_args = json.load(worker_args_file)
 
     # Find the range of tasks to process

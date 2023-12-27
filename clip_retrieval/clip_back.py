@@ -1,36 +1,37 @@
 """Clip back: host a knn service using clip as an encoder"""
 
 
-from typing import Callable, Dict, Any, List
-from flask import Flask, request, make_response
-from flask_restful import Resource, Api
-from flask_cors import CORS
-import faiss
-from collections import defaultdict
-from multiprocessing.pool import ThreadPool
-import json
-from io import BytesIO
-from PIL import Image
 import base64
-import ssl
-import os
-import fire
-from pathlib import Path
-import pandas as pd
-import urllib
-import tempfile
 import io
-import numpy as np
-from functools import lru_cache
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
-import pyarrow as pa
-import fsspec
-
-import h5py
-from tqdm import tqdm
-from prometheus_client import Histogram, REGISTRY, make_wsgi_app
-import math
+import json
 import logging
+import math
+import os
+import ssl
+import tempfile
+import urllib
+from collections import defaultdict
+from dataclasses import dataclass
+from functools import lru_cache
+from io import BytesIO
+from multiprocessing.pool import ThreadPool
+from pathlib import Path
+from typing import Any, Callable, Dict, List
+
+import faiss
+import fire
+import fsspec
+import h5py
+import numpy as np
+import pandas as pd
+import pyarrow as pa
+from flask import Flask, make_response, request
+from flask_cors import CORS
+from flask_restful import Api, Resource
+from PIL import Image
+from prometheus_client import REGISTRY, Histogram, make_wsgi_app
+from tqdm import tqdm
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from clip_retrieval.ivf_metadata_ordering import (
     Hdf5Sink,
@@ -38,8 +39,6 @@ from clip_retrieval.ivf_metadata_ordering import (
     get_old_to_new_mapping,
     re_order_parquet,
 )
-from dataclasses import dataclass
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -72,9 +71,9 @@ def metric_to_average(metric):
 
 
 def convert_metadata_to_base64(meta):
-    """
-    Converts the image at a path to the Base64 representation and sets the Base64 string to the `image`
-    key in the metadata dictionary.
+    """Converts the image at a path to the Base64 representation and sets the Base64 string to the
+    `image` key in the metadata dictionary.
+
     If there is no `image_path` key present in the metadata dictionary, the function will have no effect.
     """
     if meta is not None and "image_path" in meta:
@@ -93,12 +92,10 @@ class Health(Resource):
 
 
 class MetricsSummary(Resource):
-    """
-    metrics endpoint for prometheus
-    """
+    """Metrics endpoint for prometheus."""
 
     def get(self):
-        """define the metric endpoint get"""
+        """Define the metric endpoint get."""
         _, _, full_knn_count, full_knn_avg = metric_to_average(FULL_KNN_REQUEST_TIME)
         if full_knn_count == 0:
             s = "No request yet, go do some"
@@ -135,7 +132,8 @@ class MetricsSummary(Resource):
                 + "per request, the step costs are (in order): \n\n"
             )
             df = pd.DataFrame(
-                data=sub_metrics_strings, columns=("name", "description", "calls", "average", "proportion")
+                data=sub_metrics_strings,
+                columns=("name", "description", "calls", "average", "proportion"),
             )
             s += df.to_string()
 
@@ -155,7 +153,7 @@ class IndicesList(Resource):
 
 @DOWNLOAD_TIME.time()
 def download_image(url):
-    """Download an image from a url and return a byte stream"""
+    """Download an image from a url and return a byte stream."""
     urllib_request = urllib.request.Request(
         url,
         data=None,
@@ -170,14 +168,14 @@ def download_image(url):
 
 
 class MetadataService(Resource):
-    """The metadata service provides metadata given indices"""
+    """The metadata service provides metadata given indices."""
 
     def __init__(self, **kwargs):
         super().__init__()
         self.clip_resources = kwargs["clip_resources"]
 
     def post(self):
-        """Post the metadata"""
+        """Post the metadata."""
         json_data = request.get_json(force=True)
         ids = json_data["ids"]
         if len(ids) == 0:
@@ -198,7 +196,7 @@ def normalized(a, axis=-1, order=2):
 
 
 class KnnService(Resource):
-    """the knn service provides nearest neighbors given text or image"""
+    """The knn service provides nearest neighbors given text or image."""
 
     def __init__(self, **kwargs):
         super().__init__()
@@ -215,7 +213,7 @@ class KnnService(Resource):
         aesthetic_score,
         aesthetic_weight,
     ):
-        """compute the query embedding"""
+        """Compute the query embedding."""
         import torch  # pylint: disable=import-outside-toplevel
 
         if text_input is not None and text_input != "":
@@ -255,7 +253,7 @@ class KnnService(Resource):
         return query
 
     def hash_based_dedup(self, embeddings):
-        """deduplicate embeddings based on their hash"""
+        """Deduplicate embeddings based on their hash."""
         seen_hashes = set()
         to_remove = []
         for i, embedding in enumerate(embeddings):
@@ -268,12 +266,12 @@ class KnnService(Resource):
         return to_remove
 
     def connected_components(self, neighbors):
-        """find connected components in the graph"""
+        """Find connected components in the graph."""
         seen = set()
 
         def component(node):
             r = []
-            nodes = set([node])
+            nodes = {node}
             while nodes:
                 node = nodes.pop()
                 seen.add(node)
@@ -288,7 +286,7 @@ class KnnService(Resource):
         return u
 
     def get_non_uniques(self, embeddings, threshold=0.94):
-        """find non-unique embeddings"""
+        """Find non-unique embeddings."""
         index = faiss.IndexFlatIP(embeddings.shape[1])
         index.add(embeddings)  # pylint: disable=no-value-for-parameter
         l, _, I = index.range_search(embeddings, threshold)  # pylint: disable=no-value-for-parameter,invalid-name
@@ -313,7 +311,7 @@ class KnnService(Resource):
         return non_uniques
 
     def get_unsafe_items(self, safety_model, embeddings, threshold=0.5):
-        """find unsafe embeddings"""
+        """Find unsafe embeddings."""
         nsfw_values = safety_model.predict(embeddings, batch_size=embeddings.shape[0])
         x = np.array([e[0] for e in nsfw_values])
         return np.where(x > threshold)[0]
@@ -324,7 +322,13 @@ class KnnService(Resource):
         return np.where(safety_results == 1)[0]
 
     def post_filter(
-        self, safety_model, embeddings, deduplicate, use_safety_model, use_violence_detector, violence_detector
+        self,
+        safety_model,
+        embeddings,
+        deduplicate,
+        use_safety_model,
+        use_violence_detector,
+        violence_detector,
     ):
         """post filter results : dedup, safety, violence"""
         to_remove = set()
@@ -341,9 +345,16 @@ class KnnService(Resource):
         return to_remove
 
     def knn_search(
-        self, query, modality, num_result_ids, clip_resource, deduplicate, use_safety_model, use_violence_detector
+        self,
+        query,
+        modality,
+        num_result_ids,
+        clip_resource,
+        deduplicate,
+        use_safety_model,
+        use_violence_detector,
     ):
-        """compute the knn search"""
+        """Compute the knn search."""
 
         image_index = clip_resource.image_index
         text_index = clip_resource.text_index
@@ -399,7 +410,7 @@ class KnnService(Resource):
         return distances, indices
 
     def map_to_metadata(self, indices, distances, num_images, metadata_provider, columns_to_return):
-        """map the indices to the metadata"""
+        """Map the indices to the metadata."""
 
         results = []
         with METADATA_GET_TIME.time():
@@ -464,14 +475,19 @@ class KnnService(Resource):
         if len(distances) == 0:
             return []
         results = self.map_to_metadata(
-            indices, distances, num_images, clip_resource.metadata_provider, clip_resource.columns_to_return
+            indices,
+            distances,
+            num_images,
+            clip_resource.metadata_provider,
+            clip_resource.columns_to_return,
         )
 
         return results
 
     @FULL_KNN_REQUEST_TIME.time()
     def post(self):
-        """implement the post method for knn service, parse the request and calls the query method"""
+        """Implement the post method for knn service, parse the request and calls the query
+        method."""
         json_data = request.get_json(force=True)
         text_input = json_data.get("text", None)
         image_input = json_data.get("image", None)
@@ -519,7 +535,7 @@ def meta_to_dict(meta):
 
 
 class ParquetMetadataProvider:
-    """The parquet metadata provider provides metadata from contiguous ids using parquet"""
+    """The parquet metadata provider provides metadata from contiguous ids using parquet."""
 
     def __init__(self, parquet_folder):
         data_dir = Path(parquet_folder)
@@ -537,7 +553,7 @@ class ParquetMetadataProvider:
 
 
 def parquet_to_hdf5(parquet_folder, output_hdf5_file, columns_to_return):
-    """this convert a collection of parquet file to an hdf5 file"""
+    """This convert a collection of parquet file to an hdf5 file."""
     f = h5py.File(output_hdf5_file, "w")
     data_dir = Path(parquet_folder)
     ds = f.create_group("dataset")
@@ -567,14 +583,14 @@ def parquet_to_hdf5(parquet_folder, output_hdf5_file, columns_to_return):
 
 
 class Hdf5MetadataProvider:
-    """The hdf5 metadata provider provides metadata from contiguous ids using hdf5"""
+    """The hdf5 metadata provider provides metadata from contiguous ids using hdf5."""
 
     def __init__(self, hdf5_file):
         f = h5py.File(hdf5_file, "r")
         self.ds = f["dataset"]
 
     def get(self, ids, cols=None):
-        """implement the get method from the hdf5 metadata provide, get metadata from ids"""
+        """Implement the get method from the hdf5 metadata provide, get metadata from ids."""
         items = [{} for _ in range(len(ids))]
         if cols is None:
             cols = self.ds.keys()
@@ -597,7 +613,7 @@ def load_index(path, enable_faiss_memory_mapping):
 
 
 class ArrowMetadataProvider:
-    """The arrow metadata provider provides metadata from contiguous ids using arrow"""
+    """The arrow metadata provider provides metadata from contiguous ids using arrow."""
 
     def __init__(self, arrow_folder):
         arrow_files = [str(a) for a in sorted(Path(arrow_folder).glob("**/*")) if a.is_file()]
@@ -606,7 +622,7 @@ class ArrowMetadataProvider:
         )
 
     def get(self, ids, cols=None):
-        """implement the get method from the arrow metadata provide, get metadata from ids"""
+        """Implement the get method from the arrow metadata provide, get metadata from ids."""
         if cols is None:
             cols = self.table.schema.names
         else:
@@ -616,9 +632,14 @@ class ArrowMetadataProvider:
 
 
 def load_metadata_provider(
-    indice_folder, enable_hdf5, reorder_metadata_by_ivf_index, image_index, columns_to_return, use_arrow
+    indice_folder,
+    enable_hdf5,
+    reorder_metadata_by_ivf_index,
+    image_index,
+    columns_to_return,
+    use_arrow,
 ):
-    """load the metadata provider"""
+    """Load the metadata provider."""
     parquet_folder = indice_folder + "/metadata"
     ivf_old_to_new_mapping = None
     if use_arrow:
@@ -632,7 +653,10 @@ def load_metadata_provider(
             if not os.path.exists(ivf_old_to_new_mapping_path):
                 ivf_old_to_new_mapping = get_old_to_new_mapping(image_index)
                 ivf_old_to_new_mapping_write = np.memmap(
-                    ivf_old_to_new_mapping_path, dtype="int64", mode="write", shape=ivf_old_to_new_mapping.shape
+                    ivf_old_to_new_mapping_path,
+                    dtype="int64",
+                    mode="write",
+                    shape=ivf_old_to_new_mapping.shape,
                 )
                 ivf_old_to_new_mapping_write[:] = ivf_old_to_new_mapping
                 del ivf_old_to_new_mapping_write
@@ -654,7 +678,7 @@ def load_metadata_provider(
 
 
 def get_cache_folder(clip_model):
-    """get cache folder for given clip model"""
+    """Get cache folder for given clip model."""
     from os.path import expanduser  # pylint: disable=import-outside-toplevel
 
     home = expanduser("~")
@@ -670,7 +694,7 @@ def get_cache_folder(clip_model):
 # needs to do this at load time
 @lru_cache(maxsize=None)
 def get_aesthetic_embedding(model_type):
-    """get aesthetic embedding"""
+    """Get aesthetic embedding."""
     if model_type == "ViT-B/32":
         model_type = "vit_b_32"
     elif model_type == "ViT-L/14":
@@ -698,8 +722,8 @@ def get_aesthetic_embedding(model_type):
 
 @lru_cache(maxsize=None)
 def load_violence_detector(clip_model):
-    """load violence detector for this clip model"""
-    from urllib.request import urlretrieve  #  pylint: disable=import-outside-toplevel
+    """Load violence detector for this clip model."""
+    from urllib.request import urlretrieve  # pylint: disable=import-outside-toplevel
 
     cache_folder = get_cache_folder(clip_model)
     root_url = "https://github.com/LAION-AI/CLIP-based-NSFW-Detector/raw/main"
@@ -723,9 +747,10 @@ def load_violence_detector(clip_model):
 
 @lru_cache(maxsize=None)
 def load_safety_model(clip_model):
-    """load the safety model"""
+    """Load the safety model."""
     import autokeras as ak  # pylint: disable=import-outside-toplevel
     from tensorflow.keras.models import load_model  # pylint: disable=import-outside-toplevel
+
     from clip_retrieval.h14_nsfw_model import H14_NSFW_Detector  # pylint: disable=import-outside-toplevel
 
     cache_folder = get_cache_folder(clip_model)
@@ -753,7 +778,7 @@ def load_safety_model(clip_model):
                 "https://raw.githubusercontent.com/LAION-AI/CLIP-based-NSFW-Detector/main/clip_autokeras_nsfw_b32.zip"
             )
         else:
-            raise ValueError("Unknown model {}".format(clip_model))  # pylint: disable=consider-using-f-string
+            raise ValueError(f"Unknown model {clip_model}")  # pylint: disable=consider-using-f-string
         urlretrieve(url_model, path_to_zip_file)
         import zipfile  # pylint: disable=import-outside-toplevel
 
@@ -788,7 +813,7 @@ class ClipResource:
 
 @dataclass
 class ClipOptions:
-    """the options for clip"""
+    """The options for clip."""
 
     indice_folder: str
     clip_model: str
@@ -835,10 +860,10 @@ def dict_to_clip_options(d, clip_options):
 
 @lru_cache(maxsize=None)
 def load_mclip(clip_model):
-    """load the mclip model"""
-    from multilingual_clip import pt_multilingual_clip  # pylint: disable=import-outside-toplevel
-    import transformers  # pylint: disable=import-outside-toplevel
+    """Load the mclip model."""
     import torch  # pylint: disable=import-outside-toplevel
+    import transformers  # pylint: disable=import-outside-toplevel
+    from multilingual_clip import pt_multilingual_clip  # pylint: disable=import-outside-toplevel
 
     if clip_model == "ViT-L/14":
         model_name = "M-CLIP/XLM-Roberta-Large-Vit-L-14"
@@ -860,9 +885,10 @@ def load_mclip(clip_model):
 
 
 def load_clip_index(clip_options):
-    """load the clip index"""
+    """Load the clip index."""
     import torch  # pylint: disable=import-outside-toplevel
-    from clip_retrieval.load_clip import load_clip, get_tokenizer  # pylint: disable=import-outside-toplevel
+
+    from clip_retrieval.load_clip import get_tokenizer, load_clip  # pylint: disable=import-outside-toplevel
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = load_clip(clip_options.clip_model, use_jit=clip_options.use_jit, device=device)
@@ -930,10 +956,10 @@ def load_clip_indices(
     indices_paths,
     clip_options,
 ) -> Dict[str, ClipResource]:
-    """This load clips indices from disk"""
+    """This load clips indices from disk."""
     LOGGER.info("loading clip...")
 
-    with open(indices_paths, "r", encoding="utf-8") as f:
+    with open(indices_paths, encoding="utf-8") as f:
         indices = json.load(f)
 
     clip_resources = {}
@@ -969,7 +995,7 @@ def clip_back(
     provide_violence_detector=False,
     provide_aesthetic_embeddings=True,
 ):
-    """main entry point of clip back, start the endpoints"""
+    """Main entry point of clip back, start the endpoints."""
     print("starting boot of clip back")
     if columns_to_return is None:
         columns_to_return = ["url", "image_path", "caption", "NSFW"]
@@ -1000,7 +1026,11 @@ def clip_back(
 
     api = Api(app)
     api.add_resource(MetricsSummary, "/metrics-summary")
-    api.add_resource(IndicesList, "/indices-list", resource_class_kwargs={"indices": list(clip_resources.keys())})
+    api.add_resource(
+        IndicesList,
+        "/indices-list",
+        resource_class_kwargs={"indices": list(clip_resources.keys())},
+    )
     api.add_resource(
         MetadataService,
         "/metadata",

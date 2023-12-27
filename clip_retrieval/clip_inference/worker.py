@@ -11,11 +11,11 @@ Tasks are lists of partition_id's that this worker will be responsible for.
 import fire
 from braceexpand import braceexpand
 
-from clip_retrieval.clip_inference.runner import Runner
-from clip_retrieval.clip_inference.mapper import ClipMapper
-from clip_retrieval.clip_inference.writer import NumpyWriter
 from clip_retrieval.clip_inference.logger import LoggerWriter
+from clip_retrieval.clip_inference.mapper import ClipMapper
 from clip_retrieval.clip_inference.reader import FilesReader, WebdatasetReader
+from clip_retrieval.clip_inference.runner import Runner
+from clip_retrieval.clip_inference.writer import NumpyWriter
 from clip_retrieval.load_clip import load_clip
 
 
@@ -39,7 +39,7 @@ def worker(
     use_jit=True,
     clip_cache_path=None,
 ):
-    """Start a worker"""
+    """Start a worker."""
     print("Starting the worker", flush=True)
 
     # check for brace expansion
@@ -50,7 +50,10 @@ def worker(
 
     def reader_builder(sampler):
         _, preprocess = load_clip(
-            clip_model=clip_model, use_jit=use_jit, warmup_batch_size=batch_size, clip_cache_path=clip_cache_path
+            clip_model=clip_model,
+            use_jit=use_jit,
+            warmup_batch_size=batch_size,
+            clip_cache_path=clip_cache_path,
         )
         if input_format == "files":
             return FilesReader(

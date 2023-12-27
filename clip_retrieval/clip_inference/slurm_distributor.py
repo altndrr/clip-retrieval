@@ -1,16 +1,16 @@
-"""Distribute work using SLURM"""
+"""Distribute work using SLURM."""
 
-import os
-import time
 import json
+import os
 import subprocess
+import time
 from datetime import datetime
 
 TIMESTAMP = datetime.now().timestamp()
 
 
 class SlurmDistributor:
-    """distribute work across a collection of slurm jobs"""
+    """Distribute work across a collection of slurm jobs."""
 
     def __init__(self, tasks, worker_args, slurm_args):
         self.num_tasks = len(tasks)
@@ -21,9 +21,7 @@ class SlurmDistributor:
         self.verbose_wait = slurm_args.pop("verbose_wait")
 
     def __call__(self):
-        """
-        Create a sbatch file, submit it to slurm, and wait for it to finish.
-        """
+        """Create a sbatch file, submit it to slurm, and wait for it to finish."""
         # pop the cache path from the slurm args to remove it
         cache_path = self.slurm_args.pop("cache_path")
 
@@ -57,9 +55,7 @@ class SlurmDistributor:
             return False
 
     def _run_job(self, sbatch_file):
-        """
-        Run a job and wait for it to finish.
-        """
+        """Run a job and wait for it to finish."""
         try:
             job_id = self._start_job(sbatch_file)
 
@@ -104,7 +100,7 @@ class SlurmDistributor:
         return status == "slurm_load_jobs error: Invalid job id specified" or len(status.split("\n")) == 2
 
     def _start_job(self, sbatch_file):
-        """start job"""
+        """Start job."""
         args = ["sbatch"]
         args.append(sbatch_file)
         sbatch_output = subprocess.check_output(args).decode("utf8")
@@ -119,15 +115,14 @@ class SlurmDistributor:
         return job_id
 
     def _write_json_worker_args(self, worker_args, cache_path):
-        """write the worker args to a json file"""
+        """Write the worker args to a json file."""
         worker_args_path = os.path.join(cache_path, f"worker_args_{TIMESTAMP}.json")
         with open(worker_args_path, "w", encoding="utf-8") as worker_args_file:
             json.dump(worker_args, worker_args_file, indent=4)
         return worker_args_path
 
     def _generate_sbatch(self, cache_path, slurm_args, worker_args):
-        """
-        Generate sbatch for a worker.
+        """Generate sbatch for a worker.
 
         sbatch: allows you to specify a configuration and task in a file
             - https://slurm.schedmd.com/sbatch.html

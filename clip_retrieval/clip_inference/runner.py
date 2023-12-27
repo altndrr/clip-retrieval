@@ -1,10 +1,10 @@
-"""The runner combine reader, mapper and writer to produce clip embeddings"""
+"""The runner combine reader, mapper and writer to produce clip embeddings."""
 
 import time
 
 
 class Sampler:
-    """Sampler"""
+    """Sampler."""
 
     def __init__(self, output_partition_id, output_partition_count):
         self.output_partition_id = output_partition_id
@@ -15,9 +15,16 @@ class Sampler:
 
 
 class Runner:
-    """Runner class"""
+    """Runner class."""
 
-    def __init__(self, reader_builder, mapper_builder, writer_builder, logger_builder, output_partition_count):
+    def __init__(
+        self,
+        reader_builder,
+        mapper_builder,
+        writer_builder,
+        logger_builder,
+        output_partition_count,
+    ):
         self.reader_builder = reader_builder
         self.mapper_builder = mapper_builder
         self.writer_builder = writer_builder

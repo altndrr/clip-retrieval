@@ -1,8 +1,10 @@
-from clip_retrieval.clip_inference.writer import NumpyWriter
-import numpy as np
+import os
 import pickle
 import tempfile
-import os
+
+import numpy as np
+
+from clip_retrieval.clip_inference.writer import NumpyWriter
 
 
 def test_writer():
@@ -19,7 +21,7 @@ def test_writer():
         embedding_files = [i for i in os.listdir(current_folder + "/test_embeddings")]
         expected_shape = 0
         for embedding_file in embedding_files:
-            with open(current_folder + "/test_embeddings/{}".format(embedding_file), "rb") as f:
+            with open(current_folder + f"/test_embeddings/{embedding_file}", "rb") as f:
                 embedding = pickle.load(f)
                 expected_shape += embedding["image_embs"].shape[0]
                 writer(embedding)

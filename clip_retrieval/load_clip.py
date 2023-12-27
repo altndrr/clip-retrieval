@@ -1,16 +1,15 @@
-"""load clip"""
-from functools import lru_cache
-from torch import autocast, nn
-import torch
-import clip
-from PIL import Image
+"""Load clip."""
 import time
+from functools import lru_cache
+
+import clip
+import torch
+from PIL import Image
+from torch import autocast, nn
 
 
 class OpenClipWrapper(nn.Module):
-    """
-    Wrap OpenClip for managing input types
-    """
+    """Wrap OpenClip for managing input types."""
 
     def __init__(self, inner_model, device):
         super().__init__()
@@ -38,7 +37,7 @@ class OpenClipWrapper(nn.Module):
 
 
 def load_open_clip(clip_model, use_jit=True, device="cuda", clip_cache_path=None):
-    """load open clip"""
+    """Load open clip."""
 
     import open_clip  # pylint: disable=import-outside-toplevel
 
@@ -56,7 +55,7 @@ def load_open_clip(clip_model, use_jit=True, device="cuda", clip_cache_path=None
 
 @lru_cache(maxsize=None)
 def get_tokenizer(clip_model):
-    """Load clip"""
+    """Load clip."""
     if clip_model.startswith("open_clip:"):
         import open_clip  # pylint: disable=import-outside-toplevel
 
@@ -68,7 +67,7 @@ def get_tokenizer(clip_model):
 
 @lru_cache(maxsize=None)
 def load_clip_without_warmup(clip_model, use_jit, device, clip_cache_path):
-    """Load clip"""
+    """Load clip."""
     if clip_model.startswith("open_clip:"):
         clip_model = clip_model[len("open_clip:") :]
         model, preprocess = load_open_clip(clip_model, use_jit, device, clip_cache_path)
@@ -79,7 +78,7 @@ def load_clip_without_warmup(clip_model, use_jit, device, clip_cache_path):
 
 @lru_cache(maxsize=None)
 def load_clip(clip_model="ViT-B/32", use_jit=True, warmup_batch_size=1, clip_cache_path=None, device=None):
-    """Load clip then warmup"""
+    """Load clip then warmup."""
     if device is None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = load_clip_without_warmup(clip_model, use_jit, device, clip_cache_path)

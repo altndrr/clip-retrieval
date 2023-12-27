@@ -1,8 +1,9 @@
 import os
+import tempfile
+
 import numpy as np
 import pytest
 
-import tempfile
 from clip_retrieval.clip_inference.main import main
 
 

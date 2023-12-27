@@ -1,7 +1,8 @@
 import os
+import tempfile
+
 import numpy as np
 
-import tempfile
 from clip_retrieval.clip_inference.worker import worker
 
 
@@ -11,7 +12,6 @@ def test_worker():
     input_dataset = os.path.join(current_folder, "test_images")
 
     with tempfile.TemporaryDirectory() as tmpdir:
-
         worker(
             tasks=[0, 1],
             input_dataset=input_dataset,

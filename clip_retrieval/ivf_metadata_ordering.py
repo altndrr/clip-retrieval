@@ -1,24 +1,22 @@
-"""ivf metadata ordering is a module to reorder a metadata collection by ivf clusters"""
+"""Ivf metadata ordering is a module to reorder a metadata collection by ivf clusters."""
 
-import os
-from tqdm import tqdm
-from pathlib import Path
-import numpy as np
-from collections import defaultdict
 import heapq
+import os
 import time
-import pandas as pd
+from collections import defaultdict
+from pathlib import Path
 
-import pyarrow.parquet as pq
-import h5py
 import faiss
+import h5py
+import numpy as np
+import pandas as pd
+import pyarrow.parquet as pq
+from tqdm import tqdm
 
 
 def search_to_new_ids(index, query, k):
-    """
-    this function maps the result ids to the ones ordered by the ivf clusters
-    to be used along with a re-ordered metadata
-    """
+    """This function maps the result ids to the ones ordered by the ivf clusters to be used along
+    with a re-ordered metadata."""
     distances, indices = index.search(query, k)
     opq2 = faiss.downcast_VectorTransform(index.chain.at(0))
     xq = opq2.apply(query)
@@ -44,9 +42,7 @@ def search_to_new_ids(index, query, k):
 
 
 def get_old_to_new_mapping(index):
-    """
-    use an ivf index to compute a mapping from initial ids to ids ordered by clusters
-    """
+    """Use an ivf index to compute a mapping from initial ids to ids ordered by clusters."""
     il = faiss.extract_index_ivf(index).invlists
     d = np.ones((index.ntotal,), "int64")
     begin_list = []
@@ -65,9 +61,7 @@ def get_old_to_new_mapping(index):
 
 
 def re_order_parquet(index, input_path, output_path, columns_to_return):
-    """
-    use external sort to reorder parquet files
-    """
+    """Use external sort to reorder parquet files."""
     d = get_old_to_new_mapping(index)
     data_dir = Path(input_path)
     if not os.path.exists(output_path):
@@ -105,9 +99,7 @@ class Hdf5Sink:
         self.f.close()
 
     def _write_buffer(self):
-        """
-        Write a list of rows to hdf5
-        """
+        """Write a list of rows to hdf5."""
         if len(self.buffer) == 0:
             return
         df = pd.DataFrame(self.buffer, columns=self.keys)
@@ -143,13 +135,9 @@ class DummySink:
 
 
 def external_sort_parquet(output_sink, input_path):
-    """
-    create heap
-    add to heap 1 batch of each file
-    store in dict nb of item in heap for each file
-    start getting from heap and pushing to sink
-    when nb_item[last_retrieved] == 0 and there is some item left in this file, add a new batch of that file in heap
-    """
+    """Create heap add to heap 1 batch of each file store in dict nb of item in heap for each file
+    start getting from heap and pushing to sink when nb_item[last_retrieved] == 0 and there is some
+    item left in this file, add a new batch of that file in heap."""
 
     h = []
     data_dir = Path(input_path)

@@ -3,10 +3,10 @@ name: Continuous integration
 on:
   push:
     branches:
-    - main
+      - main
   pull_request:
     branches:
-    - main
+      - main
 
 jobs:
   lint:
@@ -34,18 +34,18 @@ jobs:
         python-version: ["3.8", "3.10"]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install
-      run: |
-        python3 -m venv .env
-        source .env/bin/activate
-        make install
-        make install-dev
-    - name: Unit tests
-      run: |
-        source .env/bin/activate
-        make test
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python3 -m venv .env
+          source .env/bin/activate
+          make install
+          make install-dev
+      - name: Unit tests
+        run: |
+          source .env/bin/activate
+          make test

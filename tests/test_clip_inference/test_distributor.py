@@ -1,9 +1,10 @@
 import os
-import numpy as np
 import tempfile
+
+import numpy as np
 import pytest
 
-from clip_retrieval.clip_inference.distributor import SequentialDistributor, PysparkDistributor
+from clip_retrieval.clip_inference.distributor import PysparkDistributor, SequentialDistributor
 
 
 @pytest.mark.parametrize("distributor_kind", ["sequential", "pyspark"])

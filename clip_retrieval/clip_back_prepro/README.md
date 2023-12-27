@@ -22,7 +22,7 @@ clip-retrieval parquet_to_arrow --parquet_folder "/media/hd2/allmeta/2Ben"\
 
 The indexer combiner script converts many indices into a single index file, without using memory.
 
-This makes it possible to use a large index at low memory cost (<500MB)
+This makes it possible to use a large index at low memory cost (\<500MB)
 
 Usage example
 

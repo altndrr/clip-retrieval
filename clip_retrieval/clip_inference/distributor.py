@@ -1,4 +1,4 @@
-"""distributors provide way to compute using several gpus and several machines"""
+"""Distributors provide way to compute using several gpus and several machines."""
 
 import os
 
@@ -11,9 +11,7 @@ class SequentialDistributor:
         self.worker_args = worker_args
 
     def __call__(self):
-        """
-        call a single `worker(...)` and pass it everything.
-        """
+        """Call a single `worker(...)` and pass it everything."""
         worker(
             tasks=self.tasks,
             **self.worker_args,
@@ -21,16 +19,14 @@ class SequentialDistributor:
 
 
 class PysparkDistributor:
-    """the pyspark distributor uses pyspark for distribution"""
+    """The pyspark distributor uses pyspark for distribution."""
 
     def __init__(self, tasks, worker_args):
         self.tasks = tasks
         self.worker_args = worker_args
 
     def __call__(self):
-        """
-        Parallelize work and call `worker(...)`
-        """
+        """Parallelize work and call `worker(...)`"""
 
         import pyspark  # pylint: disable=import-outside-toplevel
         from pyspark.sql import SparkSession  # pylint: disable=import-outside-toplevel

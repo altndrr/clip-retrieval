@@ -1,14 +1,15 @@
-"""the index combiner module is used to combine the index files into a single index file"""
+"""The index combiner module is used to combine the index files into a single index file."""
 
+import os
 from pathlib import Path
-from faiss.contrib.ondisk import merge_ondisk
+
 import faiss
 import fire
-import os
+from faiss.contrib.ondisk import merge_ondisk
 
 
 def index_combiner(input_folder, output_folder):
-    """combine the index files into a single index file"""
+    """Combine the index files into a single index file."""
     index_dir = Path(input_folder)
     block_fnames = sorted([str(a) for a in index_dir.glob("*") if "index" in str(a)])
     empty_index = faiss.read_index(block_fnames[0], faiss.IO_FLAG_MMAP)

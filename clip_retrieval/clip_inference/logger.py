@@ -1,17 +1,18 @@
-"""The logger module allows logging to stdout and wandb"""
+"""The logger module allows logging to stdout and wandb."""
 
-from collections import defaultdict
-import fsspec
-import multiprocessing
-import time
 import json
-import wandb
+import multiprocessing
 import queue
+import time
 import traceback
+from collections import defaultdict
+
+import fsspec
+import wandb
 
 
 class LoggerWriter:
-    """the logger writer write stats to json file, for each worker"""
+    """The logger writer write stats to json file, for each worker."""
 
     def __init__(self, partition_id, stats_folder):
         self.partition_id = partition_id
@@ -32,7 +33,7 @@ class LoggerWriter:
         self.queue.put(stats)
 
     def updater(self):
-        """updater process that writes stats to file from the queue"""
+        """Updater process that writes stats to file from the queue."""
         stats = defaultdict(lambda: 0)
         fs, relative_path = fsspec.core.url_to_fs(self.stats_folder)
         last_write = None
@@ -62,7 +63,7 @@ class LoggerWriter:
 
 
 class LoggerReader:
-    """the logger reader read stats of all json files and aggregate them"""
+    """The logger reader read stats of all json files and aggregate them."""
 
     def __init__(self, stats_folder, wandb_project="clip_retrieval", enable_wandb=False):
         self.stats_folder = stats_folder
@@ -83,7 +84,7 @@ class LoggerReader:
         self.queue.close()
 
     def reader(self):
-        """reader process that reads stats from files and aggregates them"""
+        """Reader process that reads stats from files and aggregates them."""
         try:  # pylint: disable=too-many-nested-blocks
             if self.enable_wandb:
                 self.current_run = wandb.init(project=self.wandb_project)
@@ -102,7 +103,7 @@ class LoggerReader:
                 try:
                     self.queue.get(False)
                     last_one = True
-                except queue.Empty as _:
+                except queue.Empty:
                     last_one = False
                 if not last_one and time.perf_counter() - last_check < self.log_interval:
                     continue

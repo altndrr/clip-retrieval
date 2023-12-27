@@ -2,16 +2,16 @@ import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
-from img2dataset import download
-from clip_retrieval import clip_inference
-from clip_retrieval import clip_index
-import pandas as pd
+import logging
 import shutil
 import subprocess
 import time
-import requests
-import logging
 
+import pandas as pd
+import requests
+from img2dataset import download
+
+from clip_retrieval import clip_index, clip_inference
 
 LOGGER = logging.getLogger(__name__)
 
@@ -93,7 +93,12 @@ def test_end2end():
             time.sleep(10)
             r = requests.post(
                 "http://localhost:1239/knn-service",
-                json={"text": "cat", "modality": "image", "num_images": 10, "indice_name": "example_index"},
+                json={
+                    "text": "cat",
+                    "modality": "image",
+                    "num_images": 10,
+                    "indice_name": "example_index",
+                },
             )
             _ = r.json()
             assert r.status_code == 200

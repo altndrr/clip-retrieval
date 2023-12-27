@@ -1,14 +1,15 @@
-"""Reader module provides files and webdataset readers"""
+"""Reader module provides files and webdataset readers."""
 
+import io
 from pathlib import Path
+
 from PIL import Image
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
-import io
 
 
 def folder_to_keys(folder, enable_text=True, enable_image=True, enable_metadata=False):
-    """returns a list of keys from a folder of images and text"""
+    """Returns a list of keys from a folder of images and text."""
     path = Path(folder)
     text_files = None
     metadata_files = None
@@ -44,12 +45,13 @@ def folder_to_keys(folder, enable_text=True, enable_image=True, enable_metadata=
 
 
 def get_image_dataset():
-    """retrieve image dataset module without importing torch at the top level"""
+    """Retrieve image dataset module without importing torch at the top level."""
 
     from torch.utils.data import Dataset  # pylint: disable=import-outside-toplevel
 
     class ImageDataset(Dataset):
-        """ImageDataset is a pytorch Dataset exposing image and text tensors from a folder of image and text"""
+        """ImageDataset is a pytorch Dataset exposing image and text tensors from a folder of image
+        and text."""
 
         def __init__(
             self,
@@ -121,7 +123,7 @@ def create_webdataset(
     cache_path=None,
     input_sampler=lambda a: a,
 ):
-    """Create a WebDataset reader, it can read a webdataset of image, text and json"""
+    """Create a WebDataset reader, it can read a webdataset of image, text and json."""
     import clip  # pylint: disable=import-outside-toplevel
     import webdataset as wds  # pylint: disable=import-outside-toplevel
 
@@ -168,7 +170,7 @@ def create_webdataset(
 
 
 def dataset_to_dataloader(dataset, batch_size, num_prepro_workers, input_format):
-    """Create a pytorch dataloader from a dataset"""
+    """Create a pytorch dataloader from a dataset."""
 
     def collate_fn(batch):
         batch = list(filter(lambda x: x is not None, batch))
@@ -187,7 +189,7 @@ def dataset_to_dataloader(dataset, batch_size, num_prepro_workers, input_format)
 
 
 class FilesReader:
-    """FilesReader is a reader that reads files from a folder"""
+    """FilesReader is a reader that reads files from a folder."""
 
     def __init__(
         self,
@@ -205,12 +207,11 @@ class FilesReader:
         self.dataloader = dataset_to_dataloader(dataset, batch_size, num_prepro_workers, "files")
 
     def __iter__(self):
-        for batch in self.dataloader:
-            yield batch
+        yield from self.dataloader
 
 
 class WebdatasetReader:
-    """WebdatasetReader is a reader that reads samples from a webdataset"""
+    """WebdatasetReader is a reader that reads samples from a webdataset."""
 
     def __init__(
         self,
@@ -241,5 +242,4 @@ class WebdatasetReader:
         self.dataloader = dataset_to_dataloader(dataset, batch_size, num_prepro_workers, "webdataset")
 
     def __iter__(self):
-        for batch in self.dataloader:
-            yield batch
+        yield from self.dataloader

@@ -1,16 +1,23 @@
-"""Clip index is a tool to index clip embeddings using autofaiss"""
+"""Clip index is a tool to index clip embeddings using autofaiss."""
 
-import fire
+import logging
 import os
 from shutil import copytree
-import logging
 
+import fire
 
 LOGGER = logging.getLogger(__name__)
 
 
-def quantize(emb_folder, index_folder, index_name, max_index_memory_usage, current_memory_available, nb_cores):
-    """calls autofaiss to build an index"""
+def quantize(
+    emb_folder,
+    index_folder,
+    index_name,
+    max_index_memory_usage,
+    current_memory_available,
+    nb_cores,
+):
+    """Calls autofaiss to build an index."""
 
     from autofaiss import build_index  # pylint: disable=import-outside-toplevel
 
@@ -45,7 +52,7 @@ def clip_index(
     text_subfolder="text_emb",
     nb_cores=None,
 ):
-    """indexes clip embeddings using autofaiss"""
+    """Indexes clip embeddings using autofaiss."""
     quantize(
         embeddings_folder + "/" + image_subfolder,
         index_folder,

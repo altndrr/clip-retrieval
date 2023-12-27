@@ -1,5 +1,3 @@
-import pytest
-
 from clip_retrieval.clip_inference.slurm_worker import get_task_list
 
 

@@ -1,16 +1,15 @@
-from setuptools import setup, find_packages
-from pathlib import Path
 import os
+from pathlib import Path
+
+from setuptools import find_packages, setup
 
 if __name__ == "__main__":
     with Path(Path(__file__).parent, "README.md").open(encoding="utf-8") as file:
         long_description = file.read()
 
-    import os
-
     def package_files(directory):
         paths = []
-        for (path, _, filenames) in os.walk(directory):
+        for path, _, filenames in os.walk(directory):
             for filename in filenames:
                 paths.append(os.path.join("..", path, filename))
         return paths

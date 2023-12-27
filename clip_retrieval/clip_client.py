@@ -15,7 +15,7 @@ class Modality(enum.Enum):
 
 
 class ClipClient:
-    """Remotely query the CLIP backend via REST"""
+    """Remotely query the CLIP backend via REST."""
 
     def __init__(
         self,
@@ -59,8 +59,7 @@ class ClipClient:
         image: str = None,
         embedding_input: list = None,
     ) -> List[Dict]:
-        """
-        Given text or image/s, search for other captions/images that are semantically similar.
+        """Given text or image/s, search for other captions/images that are semantically similar.
 
         Args:
             text: text to be searched semantically.
@@ -100,9 +99,8 @@ class ClipClient:
         image_url: str = None,
         embedding_input: list = None,
     ) -> List:
-        """
-        This function is used to send the request to the knn service.
-        It represents a direct API call and should not be called directly outside the package.
+        """This function is used to send the request to the knn service. It represents a direct API
+        call and should not be called directly outside the package.
 
         Args:
             text: text to be searched semantically.
@@ -121,7 +119,6 @@ class ClipClient:
                 },
                 ...
             ]
-
         """
         if image:
             # Convert image to base64 string

@@ -1,4 +1,4 @@
-"""Modeling & Loading code for H14 NSFW Detector"""
+"""Modeling & Loading code for H14 NSFW Detector."""
 
 import os
 
@@ -8,7 +8,7 @@ from torch import nn
 
 # pylint: disable=invalid-name
 class H14_NSFW_Detector(nn.Module):
-    """An NSFW detector for H14 CLIP embeds"""
+    """An NSFW detector for H14 CLIP embeds."""
 
     def __init__(self, input_size=1024, cache_folder=os.path.expanduser("~/.cache/clip_retrieval")):
         super().__init__()
@@ -38,22 +38,19 @@ class H14_NSFW_Detector(nn.Module):
         self.eval()
 
     def forward(self, x):
-        """Forward pass of the model"""
+        """Forward pass of the model."""
         return self.layers(x)
 
     # pylint: disable=unused-argument
     def predict(self, x, batch_size):
-        """autokeras interface"""
+        """Autokeras interface."""
         with torch.no_grad():
             x = torch.from_numpy(x)
             y = self.layers(x)
             return y.detach().cpu().numpy()
 
     def load_state(self, cache_folder: str):
-        """
-        Load the model from the cache folder
-        If it does not exist, create it
-        """
+        """Load the model from the cache folder If it does not exist, create it."""
 
         cache_subfolder = os.path.join(cache_folder, "h14_nsfw_model")
         if not os.path.exists(cache_subfolder):
@@ -65,7 +62,8 @@ class H14_NSFW_Detector(nn.Module):
             import urllib.request  # pylint: disable=import-outside-toplevel
 
             urllib.request.urlretrieve(
-                "https://github.com/LAION-AI/CLIP-based-NSFW-Detector/raw/main/h14_nsfw.pth", model_path
+                "https://github.com/LAION-AI/CLIP-based-NSFW-Detector/raw/main/h14_nsfw.pth",
+                model_path,
             )
             print("Downloaded model H14 NSFW model to:", model_path)
 

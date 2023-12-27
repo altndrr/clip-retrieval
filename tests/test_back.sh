@@ -1,3 +1,4 @@
+#!/bin/bash
 echo '{"example_index": "/tmp/my_index"}' > indices_paths.json
 clip-retrieval back --port 1234 --indices-paths indices_paths.json &
 FOO_PID=$!

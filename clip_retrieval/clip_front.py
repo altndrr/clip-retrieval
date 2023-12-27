@@ -1,12 +1,13 @@
-"""clip front"""
+"""Clip front."""
 
-from flask import Flask, send_from_directory, request
 import json
+
 import fire
+from flask import Flask, request, send_from_directory
 
 
 def add_static_endpoints(app, default_backend=None, default_index=None, url_column="url"):
-    """add static endpoints to the flask app"""
+    """Add static endpoints to the flask app."""
     import pkg_resources  # pylint: disable=import-outside-toplevel
 
     front_path = pkg_resources.resource_filename("clip_retrieval", "../front/build")

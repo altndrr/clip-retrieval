@@ -1,7 +1,8 @@
-import pytest
-import pickle
 import os
+import pickle
+
 import numpy as np
+import pytest
 
 from clip_retrieval.clip_inference.mapper import ClipMapper
 
@@ -24,7 +25,7 @@ def test_mapper(model):
     tensor_files = [i for i in os.listdir(current_dir + "/test_tensors")]
 
     for tensor_file in tensor_files:
-        with open(current_dir + "/test_tensors/{}".format(tensor_file), "rb") as f:
+        with open(current_dir + f"/test_tensors/{tensor_file}", "rb") as f:
             tensor = pickle.load(f)
             sample = mapper(tensor)
             assert sample["image_embs"].shape[0] == tensor["image_tensor"].shape[0]

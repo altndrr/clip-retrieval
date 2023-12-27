@@ -1,8 +1,9 @@
-"""mapper module transform images and text to embeddings"""
+"""Mapper module transform images and text to embeddings."""
 
 import torch
-from clip_retrieval.load_clip import load_clip
 from sentence_transformers import SentenceTransformer
+
+from clip_retrieval.load_clip import load_clip
 
 
 def normalized(a, axis=-1, order=2):
@@ -14,7 +15,7 @@ def normalized(a, axis=-1, order=2):
 
 
 class ClipMapper:
-    """transforms images and texts into clip embeddings"""
+    """Transforms images and texts into clip embeddings."""
 
     def __init__(
         self,
@@ -34,7 +35,10 @@ class ClipMapper:
         self.use_mclip = use_mclip
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         model, _ = load_clip(
-            clip_model=clip_model, use_jit=use_jit, warmup_batch_size=warmup_batch_size, clip_cache_path=clip_cache_path
+            clip_model=clip_model,
+            use_jit=use_jit,
+            warmup_batch_size=warmup_batch_size,
+            clip_cache_path=clip_cache_path,
         )
         self.model_img = model.encode_image
         self.model_txt = model.encode_text

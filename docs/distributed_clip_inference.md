@@ -13,12 +13,14 @@ We will be assuming ubuntu 20.04.
 On the master node:
 
 First download spark:
+
 ```bash
 wget https://archive.apache.org/dist/spark/spark-3.2.0/spark-3.2.0-bin-hadoop3.2.tgz
 tar xf spark-3.2.0-bin-hadoop3.2.tgz
 ```
 
 Then download clip inference:
+
 ```bash
 rm -rf clip_retrieval.pex
 wget https://github.com/rom1504/clip-retrieval/releases/latest/download/clip_retrieval.tgz -O clip_retrieval.tgz
@@ -28,10 +30,10 @@ tar xf clip_retrieval_torch.tgz
 ```
 
 If the master node cannot open ports that are visible from your local machine, you can do a tunnel between your local machine and the master node to be able to see the spark ui (at http://localhost:8080)
+
 ```bash
 ssh -L 8080:localhost:8080 -L 4040:localhost:4040 master_node
 ```
-
 
 ## Setup the worker nodes
 
@@ -44,6 +46,7 @@ ssh-keyscan `cat ips.txt` >> ~/.ssh/known_hosts
 ```
 
 You may use a script like this to fill your .ssh/config file
+
 ```
 def generate(ip):
     print(
@@ -58,16 +61,19 @@ with open("ips.txt") as f:
     for line in lines:
         generate(line.strip())
 ```
+
 python3 generate.py >> ~/.ssh/config
 
 Install pssh with `sudo apt install pssh`
 
 Pick the right username (MASTER_USER) for the master node, and (USER) for the worker nodes, then run this to check your parallel ssh setup:
+
 ```bash
 USER=rom1504
 ```
 
 Optionally, if another node than the current one has access to the worker nodes, you may need to add a ssh key to all the nodes with:
+
 ```
 for IP in `cat ips.txt`
 do
@@ -76,6 +82,7 @@ done
 ```
 
 Check you can connect to all the nodes with:
+
 ```
 parallel-ssh -l $USER -i -h  ips.txt uname -a
 ```
@@ -87,14 +94,14 @@ parallel-ssh -l $USER -i -h  ips.txt "sudo apt update"
 parallel-ssh -l $USER -i -h  ips.txt "sudo apt install openjdk-11-jre-headless libgl1 htop tmux bwm-ng sshfs python3-distutils python3-apt python3.8 -y"
 ```
 
-
-#### [Optional] Network setting on aws
+#### \[Optional\] Network setting on aws
 
 put in same VPC and security group and allow inbound
 
 ##### Download clip retrieval on all nodes
 
 Download clip retrieval on all node by retrying this N times until parallel ssh says success for all:
+
 ```bash
 
 parallel-ssh -i -h ips.txt "rm -rf clip_retrieval.pex"
@@ -109,7 +116,7 @@ parallel-ssh -i -h ips.txt "tar xf clip_retrieval_torch.tgz"
 parallel-ssh -l $USER -i -h  ips.txt  "wget https://archive.apache.org/dist/spark/spark-3.2.0/spark-3.2.0-bin-hadoop3.2.tgz"
 parallel-ssh -l $USER -i -h  ips.txt  "tar xf spark-3.2.0-bin-hadoop3.2.tgz"
 
-echo '[{"id":{"componentName": "spark.worker","resourceName":"gpu"},"addresses":["0","1","2","3","4","5","6","7"]}]' > gpufile
+echo '\[{"id":{"componentName": "spark.worker","resourceName":"gpu"},"addresses":\["0","1","2","3","4","5","6","7"\]}\]' > gpufile
 parallel-scp -h ips.txt gpufile /home/ubuntu/gpufile
 
 #### Start the master node
@@ -120,7 +127,6 @@ When you're ready, you can start the master node with:
 ./spark-3.2.0-bin-hadoop3.2/sbin/start-master.sh -p 7077
 ```
 
-
 #### Start the worker nodes
 
 When you're ready, you can start the worker nodes with:
@@ -130,7 +136,6 @@ parallel-ssh -l $USER -i -h  ips.txt  'SPARK_WORKER_OPTS="-Dspark.worker.resourc
 ```
 
 Replace 172.31.44.42 by the master node ip.
-
 
 #### Stop the worker nodes
 
@@ -148,7 +153,6 @@ When you're done, you can stop the master node with:
 ```bash
 pkill java
 ```
-
 
 ### Running clip inference on it
 
@@ -169,7 +173,7 @@ from pyspark import SparkConf, SparkContext
 
 def create_spark_session():
     # this must be a path that is available on all worker nodes
-    
+
     os.environ['PYSPARK_PYTHON'] = "/home/ubuntu/clip_retrieval.pex/__main__.py"
     spark = (
         SparkSession.builder
@@ -200,8 +204,9 @@ clip_inference(input_dataset="pipe:aws s3 cp --quiet s3://laion-us-east-1/laion-
 ## Some benchmarks
 
 Using 1 node with 8 a100 on aws, using s3 as input and output:
-* 7000 sample/s on 8 a100 on vit-b / 32 : 2500 for one gpu so it's resizing bottlenecked
-* 7000 sample/s on 8 a100 on vit-b / 16 : 1100 sample/s for one gpu so it's still bottlenecked by resizing but much better
-* 2500 sample/s on 8 a100 on vit-l / 14 : 312 sample/s for one gpu so it's optimal
+
+- 7000 sample/s on 8 a100 on vit-b / 32 : 2500 for one gpu so it's resizing bottlenecked
+- 7000 sample/s on 8 a100 on vit-b / 16 : 1100 sample/s for one gpu so it's still bottlenecked by resizing but much better
+- 2500 sample/s on 8 a100 on vit-l / 14 : 312 sample/s for one gpu so it's optimal
 
 on 4 such nodes, the speed are multiplied by 4 which is optimal.
