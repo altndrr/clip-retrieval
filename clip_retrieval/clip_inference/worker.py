@@ -16,7 +16,7 @@ from clip_retrieval.clip_inference.mapper import ClipMapper
 from clip_retrieval.clip_inference.reader import FilesReader, WebdatasetReader
 from clip_retrieval.clip_inference.runner import Runner
 from clip_retrieval.clip_inference.writer import NumpyWriter
-from clip_retrieval.load_clip import load_clip
+from clip_retrieval.load_clip import get_tokenizer, load_clip
 
 
 def worker(
@@ -65,6 +65,7 @@ def worker(
                 enable_text=enable_text,
                 enable_image=enable_image,
                 enable_metadata=enable_metadata,
+                tokenizer=get_tokenizer(clip_model),
             )
         elif input_format == "webdataset":
             return WebdatasetReader(
@@ -79,6 +80,7 @@ def worker(
                 wds_image_key=wds_image_key,
                 wds_caption_key=wds_caption_key,
                 cache_path=cache_path,
+                tokenizer=get_tokenizer(clip_model),
             )
         else:
             raise ValueError(f"Unknown input_format: {input_format}")

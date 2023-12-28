@@ -7,6 +7,8 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
 
+from clip_retrieval.load_clip import get_tokenizer
+
 
 def folder_to_keys(folder, enable_text=True, enable_image=True, enable_metadata=False):
     """Returns a list of keys from a folder of images and text."""
@@ -61,9 +63,12 @@ def get_image_dataset():
             enable_image=True,
             enable_metadata=False,
             input_sampler=lambda a: a,
+            tokenizer=None,
         ):
             super().__init__()
-            import clip
+
+            if tokenizer is None:
+                tokenizer = get_tokenizer()
 
             self.keys, text_files, image_files, metadata_files = folder_to_keys(
                 folder, enable_text, enable_image, enable_metadata
@@ -74,7 +79,7 @@ def get_image_dataset():
             self.enable_metadata = enable_metadata
             keys_set = set(self.keys)
             if self.enable_text:
-                self.tokenizer = lambda text: clip.tokenize([text], truncate=True)[0]
+                self.tokenizer = tokenizer
                 self.text_files = {k: v for k, v in text_files.items() if k in keys_set}
             if self.enable_image:
                 self.image_files = {k: v for k, v in image_files.items() if k in keys_set}
@@ -98,7 +103,7 @@ def get_image_dataset():
             if self.enable_text:
                 text_file = self.text_files[key]
                 caption = text_file.read_text()
-                tokenized_text = self.tokenizer(caption)
+                tokenized_text = self.tokenizer(caption).squeeze(0)
                 output["text_tokens"] = tokenized_text
                 output["text"] = caption
 
@@ -122,15 +127,17 @@ def create_webdataset(
     enable_metadata=False,
     cache_path=None,
     input_sampler=lambda a: a,
+    tokenizer=None,
 ):
     """Create a WebDataset reader, it can read a webdataset of image, text and json."""
-    import clip
     import webdataset as wds
 
     urls = input_sampler(urls)
 
+    if tokenizer is None:
+        tokenizer = get_tokenizer()
+
     dataset = wds.WebDataset(urls, cache_dir=cache_path, cache_size=10**10, handler=wds.handlers.warn_and_continue)
-    tokenizer = lambda text: clip.tokenize([text], truncate=True)[0]
 
     def filter_dataset(item):
         if enable_text and caption_key not in item:
@@ -155,7 +162,7 @@ def create_webdataset(
         if enable_text:
             text = item[caption_key]
             caption = text.decode("utf-8")
-            tokenized_text = tokenizer(caption)
+            tokenized_text = tokenizer(caption).squeeze(0)
             output["text_tokens"] = tokenized_text
             output["text"] = caption
 
@@ -201,9 +208,12 @@ class FilesReader:
         enable_text=True,
         enable_image=True,
         enable_metadata=False,
+        tokenizer=None,
     ) -> None:
         super().__init__()
-        dataset = get_image_dataset()(preprocess, input_dataset, enable_text, enable_image, enable_metadata, sampler)
+        dataset = get_image_dataset()(
+            preprocess, input_dataset, enable_text, enable_image, enable_metadata, sampler, tokenizer=tokenizer
+        )
         self.dataloader = dataset_to_dataloader(dataset, batch_size, num_prepro_workers, "files")
 
     def __iter__(self):
@@ -226,6 +236,7 @@ class WebdatasetReader:
         wds_image_key="jpg",
         wds_caption_key="txt",
         cache_path=None,
+        tokenizer=None,
     ):
         self.batch_size = batch_size
         dataset = create_webdataset(
@@ -238,6 +249,7 @@ class WebdatasetReader:
             enable_metadata=enable_metadata,
             cache_path=cache_path,
             input_sampler=sampler,
+            tokenizer=tokenizer,
         )
         self.dataloader = dataset_to_dataloader(dataset, batch_size, num_prepro_workers, "webdataset")
 

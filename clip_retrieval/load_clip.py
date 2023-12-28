@@ -54,7 +54,7 @@ def load_open_clip(clip_model, use_jit=True, device="cuda", clip_cache_path=None
 
 
 @lru_cache(maxsize=None)
-def get_tokenizer(clip_model):
+def get_tokenizer(clip_model="ViT-B/32"):
     """Load clip."""
     if clip_model.startswith("open_clip:"):
         import open_clip
@@ -85,17 +85,17 @@ def load_clip(clip_model="ViT-B/32", use_jit=True, warmup_batch_size=1, clip_cac
 
     start = time.time()
     print(f"warming up with batch size {warmup_batch_size} on {device}", flush=True)
-    warmup(warmup_batch_size, device, preprocess, model)
+    warmup(warmup_batch_size, device, preprocess, model, tokenizer=get_tokenizer(clip_model))
     duration = time.time() - start
     print(f"done warming up in {duration}s", flush=True)
     return model, preprocess
 
 
-def warmup(batch_size, device, preprocess, model):
+def warmup(batch_size, device, preprocess, model, tokenizer):
     fake_img = Image.new("RGB", (224, 224), color="red")
     fake_text = ["fake"] * batch_size
     image_tensor = torch.cat([torch.unsqueeze(preprocess(fake_img), 0)] * batch_size).to(device)
-    text_tokens = clip.tokenize(fake_text).to(device)
+    text_tokens = tokenizer(fake_text).to(device)
     for _ in range(2):
         with torch.no_grad():
             model.encode_image(image_tensor)
