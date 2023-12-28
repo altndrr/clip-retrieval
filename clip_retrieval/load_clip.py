@@ -39,7 +39,7 @@ class OpenClipWrapper(nn.Module):
 def load_open_clip(clip_model, use_jit=True, device="cuda", clip_cache_path=None):
     """Load open clip."""
 
-    import open_clip  # pylint: disable=import-outside-toplevel
+    import open_clip
 
     torch.backends.cuda.matmul.allow_tf32 = True
 
@@ -57,7 +57,7 @@ def load_open_clip(clip_model, use_jit=True, device="cuda", clip_cache_path=None
 def get_tokenizer(clip_model):
     """Load clip."""
     if clip_model.startswith("open_clip:"):
-        import open_clip  # pylint: disable=import-outside-toplevel
+        import open_clip
 
         clip_model = clip_model[len("open_clip:") :]
         return open_clip.get_tokenizer(clip_model)

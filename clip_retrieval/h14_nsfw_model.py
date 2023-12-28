@@ -6,7 +6,6 @@ import torch
 from torch import nn
 
 
-# pylint: disable=invalid-name
 class H14_NSFW_Detector(nn.Module):
     """An NSFW detector for H14 CLIP embeds."""
 
@@ -41,7 +40,6 @@ class H14_NSFW_Detector(nn.Module):
         """Forward pass of the model."""
         return self.layers(x)
 
-    # pylint: disable=unused-argument
     def predict(self, x, batch_size):
         """Autokeras interface."""
         with torch.no_grad():
@@ -59,7 +57,7 @@ class H14_NSFW_Detector(nn.Module):
         model_path = os.path.join(cache_subfolder, "model.pt")
         if not os.path.exists(model_path):
             print("Downloading model...")
-            import urllib.request  # pylint: disable=import-outside-toplevel
+            import urllib.request
 
             urllib.request.urlretrieve(
                 "https://github.com/LAION-AI/CLIP-based-NSFW-Detector/raw/main/h14_nsfw.pth",

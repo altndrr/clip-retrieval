@@ -43,7 +43,7 @@ from clip_retrieval.ivf_metadata_ordering import (
 LOGGER = logging.getLogger(__name__)
 
 
-for coll in list(REGISTRY._collector_to_names.keys()):  # pylint: disable=protected-access
+for coll in list(REGISTRY._collector_to_names.keys()):
     REGISTRY.unregister(coll)
 
 FULL_KNN_REQUEST_TIME = Histogram("full_knn_request_time", "Time spent processing knn request")
@@ -214,7 +214,7 @@ class KnnService(Resource):
         aesthetic_weight,
     ):
         """Compute the query embedding."""
-        import torch  # pylint: disable=import-outside-toplevel
+        import torch
 
         if text_input is not None and text_input != "":
             if use_mclip:
@@ -288,8 +288,8 @@ class KnnService(Resource):
     def get_non_uniques(self, embeddings, threshold=0.94):
         """Find non-unique embeddings."""
         index = faiss.IndexFlatIP(embeddings.shape[1])
-        index.add(embeddings)  # pylint: disable=no-value-for-parameter
-        l, _, I = index.range_search(embeddings, threshold)  # pylint: disable=no-value-for-parameter,invalid-name
+        index.add(embeddings)
+        l, _, I = index.range_search(embeddings, threshold)
 
         same_mapping = defaultdict(list)
 
@@ -679,7 +679,7 @@ def load_metadata_provider(
 
 def get_cache_folder(clip_model):
     """Get cache folder for given clip model."""
-    from os.path import expanduser  # pylint: disable=import-outside-toplevel
+    from os.path import expanduser
 
     home = expanduser("~")
 
@@ -723,7 +723,7 @@ def get_aesthetic_embedding(model_type):
 @lru_cache(maxsize=None)
 def load_violence_detector(clip_model):
     """Load violence detector for this clip model."""
-    from urllib.request import urlretrieve  # pylint: disable=import-outside-toplevel
+    from urllib.request import urlretrieve
 
     cache_folder = get_cache_folder(clip_model)
     root_url = "https://github.com/LAION-AI/CLIP-based-NSFW-Detector/raw/main"
@@ -748,10 +748,10 @@ def load_violence_detector(clip_model):
 @lru_cache(maxsize=None)
 def load_safety_model(clip_model):
     """Load the safety model."""
-    import autokeras as ak  # pylint: disable=import-outside-toplevel
-    from tensorflow.keras.models import load_model  # pylint: disable=import-outside-toplevel
+    import autokeras as ak
+    from tensorflow.keras.models import load_model
 
-    from clip_retrieval.h14_nsfw_model import H14_NSFW_Detector  # pylint: disable=import-outside-toplevel
+    from clip_retrieval.h14_nsfw_model import H14_NSFW_Detector
 
     cache_folder = get_cache_folder(clip_model)
 
@@ -768,7 +768,7 @@ def load_safety_model(clip_model):
     if not os.path.exists(model_dir):
         os.makedirs(cache_folder, exist_ok=True)
 
-        from urllib.request import urlretrieve  # pylint: disable=import-outside-toplevel
+        from urllib.request import urlretrieve
 
         path_to_zip_file = cache_folder + "/clip_autokeras_binary_nsfw.zip"
         if clip_model == "ViT-L/14":
@@ -778,9 +778,9 @@ def load_safety_model(clip_model):
                 "https://raw.githubusercontent.com/LAION-AI/CLIP-based-NSFW-Detector/main/clip_autokeras_nsfw_b32.zip"
             )
         else:
-            raise ValueError(f"Unknown model {clip_model}")  # pylint: disable=consider-using-f-string
+            raise ValueError(f"Unknown model {clip_model}")
         urlretrieve(url_model, path_to_zip_file)
-        import zipfile  # pylint: disable=import-outside-toplevel
+        import zipfile
 
         with zipfile.ZipFile(path_to_zip_file, "r") as zip_ref:
             zip_ref.extractall(cache_folder)
@@ -861,9 +861,9 @@ def dict_to_clip_options(d, clip_options):
 @lru_cache(maxsize=None)
 def load_mclip(clip_model):
     """Load the mclip model."""
-    import torch  # pylint: disable=import-outside-toplevel
-    import transformers  # pylint: disable=import-outside-toplevel
-    from multilingual_clip import pt_multilingual_clip  # pylint: disable=import-outside-toplevel
+    import torch
+    import transformers
+    from multilingual_clip import pt_multilingual_clip
 
     if clip_model == "ViT-L/14":
         model_name = "M-CLIP/XLM-Roberta-Large-Vit-L-14"
@@ -886,9 +886,9 @@ def load_mclip(clip_model):
 
 def load_clip_index(clip_options):
     """Load the clip index."""
-    import torch  # pylint: disable=import-outside-toplevel
+    import torch
 
-    from clip_retrieval.load_clip import get_tokenizer, load_clip  # pylint: disable=import-outside-toplevel
+    from clip_retrieval.load_clip import get_tokenizer, load_clip
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = load_clip(clip_options.clip_model, use_jit=clip_options.use_jit, device=device)
@@ -1020,7 +1020,7 @@ def clip_back(
 
     app = Flask(__name__)
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/metrics": make_wsgi_app()})
-    from .clip_front import add_static_endpoints  # pylint: disable=import-outside-toplevel
+    from .clip_front import add_static_endpoints
 
     add_static_endpoints(app, default_backend, None, url_column)
 

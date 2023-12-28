@@ -65,7 +65,6 @@ def calculate_partition_count(
     return output_partition_count, enable_text, enable_image, enable_metadata
 
 
-# pylint: disable=unused-argument
 def main(
     input_dataset,
     output_folder,

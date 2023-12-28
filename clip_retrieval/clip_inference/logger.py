@@ -85,7 +85,7 @@ class LoggerReader:
 
     def reader(self):
         """Reader process that reads stats from files and aggregates them."""
-        try:  # pylint: disable=too-many-nested-blocks
+        try:
             if self.enable_wandb:
                 self.current_run = wandb.init(project=self.wandb_project)
             else:
@@ -98,7 +98,7 @@ class LoggerReader:
 
             fs.makedirs(relative_path, exist_ok=True)
 
-            while True:  # pylint: disable=too-many-nested-blocks
+            while True:
                 time.sleep(0.1)
                 try:
                     self.queue.get(False)
@@ -114,7 +114,7 @@ class LoggerReader:
                 for k in stats_files:
                     filename = k.split("/")[-1]
                     if filename[:4] == "wip_" or filename not in stats:
-                        for i in range(5):  # pylint: disable=unused-variable
+                        for i in range(5):
                             try:
                                 fs.invalidate_cache()
                                 if not fs.exists(k):
@@ -124,7 +124,7 @@ class LoggerReader:
                                 if filename[:4] != "wip_" and "wip_" + filename in stats:
                                     del stats["wip_" + filename]
                                 break
-                            except Exception as e:  # pylint: disable=broad-except
+                            except Exception as e:
                                 if i == 4:
                                     print(f"failed to read {k} error : {e}")
                                 time.sleep(1)
@@ -196,7 +196,7 @@ class LoggerReader:
                 if last_one:
                     self._finish()
                     break
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             traceback.print_exc()
             print("logger error", e)
             self._finish()

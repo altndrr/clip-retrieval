@@ -7,7 +7,7 @@ from clip_retrieval.load_clip import load_clip
 
 
 def normalized(a, axis=-1, order=2):
-    import numpy as np  # pylint: disable=import-outside-toplevel
+    import numpy as np
 
     l2 = np.atleast_1d(np.linalg.norm(a, order, axis))
     l2[l2 == 0] = 1

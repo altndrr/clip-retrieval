@@ -8,7 +8,7 @@ from flask import Flask, request, send_from_directory
 
 def add_static_endpoints(app, default_backend=None, default_index=None, url_column="url"):
     """Add static endpoints to the flask app."""
-    import pkg_resources  # pylint: disable=import-outside-toplevel
+    import pkg_resources
 
     front_path = pkg_resources.resource_filename("clip_retrieval", "../front/build")
 

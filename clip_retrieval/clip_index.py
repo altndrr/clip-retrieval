@@ -19,7 +19,7 @@ def quantize(
 ):
     """Calls autofaiss to build an index."""
 
-    from autofaiss import build_index  # pylint: disable=import-outside-toplevel
+    from autofaiss import build_index
 
     try:
         LOGGER.debug(f"starting index {index_name}")
@@ -37,7 +37,7 @@ def quantize(
                 nb_cores=nb_cores,
             )
             LOGGER.debug(f"index {index_name} done")
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         LOGGER.exception(f"index {index_name} failed")
         raise e
 

@@ -64,8 +64,8 @@ class OutputSink:
 
     def __write_batch(self):
         """Write a batch of embeddings and meta to npy and parquet."""
-        import numpy as np  # pylint: disable=import-outside-toplevel
-        import pandas as pd  # pylint: disable=import-outside-toplevel
+        import numpy as np
+        import pandas as pd
 
         data_lists = []
         data_columns = []

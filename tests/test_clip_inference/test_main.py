@@ -13,7 +13,7 @@ def test_main():
     input_dataset = os.path.join(current_folder, "test_images")
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        from pyspark.sql import SparkSession  # pylint: disable=import-outside-toplevel
+        from pyspark.sql import SparkSession
 
         spark = (
             SparkSession.builder.config("spark.driver.memory", "16G")

@@ -47,7 +47,7 @@ def folder_to_keys(folder, enable_text=True, enable_image=True, enable_metadata=
 def get_image_dataset():
     """Retrieve image dataset module without importing torch at the top level."""
 
-    from torch.utils.data import Dataset  # pylint: disable=import-outside-toplevel
+    from torch.utils.data import Dataset
 
     class ImageDataset(Dataset):
         """ImageDataset is a pytorch Dataset exposing image and text tensors from a folder of image
@@ -63,7 +63,7 @@ def get_image_dataset():
             input_sampler=lambda a: a,
         ):
             super().__init__()
-            import clip  # pylint: disable=import-outside-toplevel
+            import clip
 
             self.keys, text_files, image_files, metadata_files = folder_to_keys(
                 folder, enable_text, enable_image, enable_metadata
@@ -124,8 +124,8 @@ def create_webdataset(
     input_sampler=lambda a: a,
 ):
     """Create a WebDataset reader, it can read a webdataset of image, text and json."""
-    import clip  # pylint: disable=import-outside-toplevel
-    import webdataset as wds  # pylint: disable=import-outside-toplevel
+    import clip
+    import webdataset as wds
 
     urls = input_sampler(urls)
 

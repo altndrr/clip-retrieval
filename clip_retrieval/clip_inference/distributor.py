@@ -28,8 +28,8 @@ class PysparkDistributor:
     def __call__(self):
         """Parallelize work and call `worker(...)`"""
 
-        import pyspark  # pylint: disable=import-outside-toplevel
-        from pyspark.sql import SparkSession  # pylint: disable=import-outside-toplevel
+        import pyspark
+        from pyspark.sql import SparkSession
 
         spark = SparkSession.getActiveSession()
 

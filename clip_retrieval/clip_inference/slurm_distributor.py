@@ -78,7 +78,7 @@ class SlurmDistributor:
             else:
                 print("job succeeded")
                 return "success"
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             print(e)
             return "exception occurred"
 

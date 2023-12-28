@@ -31,7 +31,7 @@ def test_distributor(distributor_kind):
         if distributor_kind == "sequential":
             distributor = SequentialDistributor(tasks=tasks, worker_args=worker_args)
         elif distributor_kind == "pyspark":
-            from pyspark.sql import SparkSession  # pylint: disable=import-outside-toplevel
+            from pyspark.sql import SparkSession
 
             spark = (
                 SparkSession.builder.config("spark.driver.memory", "16G")

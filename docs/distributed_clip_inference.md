@@ -167,7 +167,7 @@ Then run `./clip_retrieval.pex/__main__.py inference.py`
 from clip_retrieval import clip_inference
 import shutil
 import os
-from pyspark.sql import SparkSession  # pylint: disable=import-outside-toplevel
+from pyspark.sql import SparkSession
 
 from pyspark import SparkConf, SparkContext
 

@@ -31,7 +31,7 @@ def parquet_to_arrow(parquet_folder, output_arrow_folder, columns_to_return):
     data_dir = Path(parquet_folder)
     files = sorted(data_dir.glob("*.parquet"))
     number_samples = count_samples(files)
-    print(f"There are {number_samples} samples in the dataset")  # pylint: disable=consider-using-f-string
+    print(f"There are {number_samples} samples in the dataset")
 
     schema = pq.read_table(files[0], columns=columns_to_return).schema
     sink = None
@@ -44,9 +44,7 @@ def parquet_to_arrow(parquet_folder, output_arrow_folder, columns_to_return):
             if sink is not None:
                 writer.close()
                 sink.close()
-            file_key = "{true_key:0{key_format}d}".format(  # pylint: disable=consider-using-f-string
-                key_format=key_format, true_key=batch_counter
-            )
+            file_key = "{true_key:0{key_format}d}".format(key_format=key_format, true_key=batch_counter)
             file_name = f"{output_arrow_folder}/{file_key}.arrow"
             print(f"Writing to {file_name}")
             sink = pa.OSFile(file_name, "wb")
@@ -58,7 +56,7 @@ def parquet_to_arrow(parquet_folder, output_arrow_folder, columns_to_return):
         for i in range(2):
             try:
                 table = pq.read_table(parquet_files, columns=columns_to_return, use_threads=False)
-            except Exception as e:  # pylint: disable=broad-except
+            except Exception as e:
                 if i == 1:
                     raise e
                 print("Error reading parquet file: ", e)

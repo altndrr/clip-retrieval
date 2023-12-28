@@ -8,15 +8,15 @@ import fire
 def clip_filter(query, output_folder, indice_folder, num_results=100, threshold=None):
     """Entry point of clip filter."""
 
-    import os  # pylint: disable=import-outside-toplevel
-    import shutil  # pylint: disable=import-outside-toplevel
-    from pathlib import Path  # pylint: disable=import-outside-toplevel
+    import os
+    import shutil
+    from pathlib import Path
 
-    import clip  # pylint: disable=import-outside-toplevel
-    import faiss  # pylint: disable=import-outside-toplevel
-    import pandas as pd  # pylint: disable=import-outside-toplevel
-    import torch  # pylint: disable=import-outside-toplevel
-    from PIL import Image  # pylint: disable=import-outside-toplevel
+    import clip
+    import faiss
+    import pandas as pd
+    import torch
+    from PIL import Image
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = clip.load("ViT-B/32", device=device, jit=False)
